@@ -1,9 +1,9 @@
-## Local Machine Prerequisites
+## $ Local Machine Prerequisites
 
 - Node.js version 14+
 - MySql version 8+ (if using local database)
 
-## Database Setup
+## $ Database Setup
 
 ```sql
 - Create Database
@@ -38,7 +38,7 @@ INSERT INTO books(title, author, description, image_url) VALUES ('Harry Potter',
 INSERT INTO books(title, author, description, image_url) VALUES ('Mr. Bean', 'Paul Wilndle', 'The childish Mr Bean uses his unusual wit to fulfil everyday tasks. But more often than not, he ends up creating trouble for himself and those around him.', 'https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8OXx8fGVufDB8fHx8&w=1000&q=80');
 ```
 
-## Setup
+## $ Setup
 
 1. Clone this repository and change working directory
 
@@ -58,7 +58,18 @@ INSERT INTO books(title, author, description, image_url) VALUES ('Mr. Bean', 'Pa
     $ npm run dev
 ```
 
-### API Curls (import these in Postman)
+### $ Environment Variables
+
+Either you can use default values of database environment variables as defined in the [DB file here](https://github.com/farhan787/books_ecommerce/blob/master/startup/db.js). Or you can export below environment variables before running the dev server.
+
+```bash
+DB_HOST=''
+DB_USER=''
+DB_PASSWORD=''
+DB_NAME=''
+```
+
+### $ API Curls (import these in Postman)
 
 1. To get list of books with reviews sorted by average rating of each book among all books in database
 
