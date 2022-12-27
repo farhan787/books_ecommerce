@@ -10,8 +10,8 @@ app.use(function (req, res, next) {
   next();
 });
 
-require('../startup/handleAsyncErrors')();
-require('../startup/routes')(app);
+require('./startup/handleAsyncErrors')();
+require('./startup/routes')(app);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () =>
