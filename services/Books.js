@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const { options } = require('../routes/books');
 
 const db = require('../startup/db');
 
@@ -25,6 +26,8 @@ const fetchBooksWithAverageRatings = async (limit, offset = 0) => {
 };
 
 const fetchBooksWithReviewsByIds = (bookIds) => {
+  if (!bookIds || !bookIds.length) return [];
+
   const booksWithReviewsQuery = `
     SELECT b.id, b.title, b.description, b.author, b.image_url, br.star_rating, br.comment
     FROM books b
@@ -96,7 +99,6 @@ const GetBooksWithReviewsSortedByRatings = async (options) => {
   const offset = options.offset ? options.offset : 0;
 
   const booksWithAvgRatings = await fetchBooksWithAverageRatings(limit, offset);
-  if (!booksWithAvgRatings || !booksWithAvgRatings.length) return [];
 
   const sortedBooksWithAvgRatings = _.orderBy(
     booksWithAvgRatings,
@@ -106,15 +108,53 @@ const GetBooksWithReviewsSortedByRatings = async (options) => {
 
   // extract book ids from sorted books
   const bookIdsSortedByRatings = _.map(sortedBooksWithAvgRatings, 'book_id');
-
   const booksWithReviews = await fetchBooksWithReviewsByIds(
     bookIdsSortedByRatings
   );
-  if (!booksWithReviews || !booksWithReviews.length) return [];
 
-  return formatBooksWithSortedRatings({
+  const formattedBooks = formatBooksWithSortedRatings({
     booksWithReviews,
     sortedBooksWithAvgRatings,
+  });
+
+  // Handle books with no reviews
+  if (formattedBooks.length < limit) {
+    const booksToFetch = limit - formattedBooks.length;
+
+    const booksWithNoReviews = await fetchBooksWithNoReviews({
+      limit: booksToFetch,
+    });
+
+    booksWithNoReviews.forEach((book) => {
+      book.averageRating = 0;
+      book.reviews = [];
+      book.imageUrl = book.image_url;
+
+      delete book.image_url;
+    });
+    formattedBooks.push(...booksWithNoReviews);
+  }
+  return formattedBooks;
+};
+
+const fetchBooksWithNoReviews = (options) => {
+  let booksWithNoReviewsQuery = `
+  SELECT b.id, b.title, b.description, b.author, b.image_url
+  FROM books b
+  LEFT JOIN book_reviews br
+    ON b.id = br.book_id
+  WHERE br.id IS NULL`;
+
+  if (options.limit) booksWithNoReviewsQuery += ' LIMIT ?';
+
+  return new Promise((resolve, reject) => {
+    db.query(
+      { sql: booksWithNoReviewsQuery, values: [options.limit] },
+      (err, rows) => {
+        if (err) reject(err);
+        resolve(rows);
+      }
+    );
   });
 };
 
