@@ -89,7 +89,10 @@ const formatBooksWithSortedRatings = ({
 };
 
 /**
- * GetBooksWithReviewsSortedByRatings:
+ * GetBooksWithReviewsSortedByRatings: The intention here is, if we have 10^books even then we're returning
+ * books sorted by overall average ratings of each book. If client needs 40 books and skips 12000 books then those
+ * 40 books are still sorted by average ratings of their reviews among 10^7 books.
+ * 
  * 1. Fetch books ids with sorted avg ratings from book_reviews table
  * 2. Fetch books with reviews for above book ids
  * 3. Format the books with desired response format
