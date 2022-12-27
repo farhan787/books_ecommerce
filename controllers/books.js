@@ -1,11 +1,15 @@
-const { FetchBooksByIDs } = require('../services/Books');
+const { GetBooksWithReviewsSortedByRatings } = require('../services/Books');
 
-const getBooks = () => {
-  // TODO: add validation and other business logic
-  const books = FetchBooksByIDs();
-  return {
-    books: [{ title: 'book1' }],
-  };
+const getBooks = async (req) => {
+  let { limit, offset } = req.query;
+
+  const options = { defaultLimit: 20 };
+  if (limit) options.limit = parseInt(limit);
+  if (offset) options.offset = parseInt(offset);
+
+  const books = await GetBooksWithReviewsSortedByRatings(options);
+  const resp = { books };
+  return { resp, err: null };
 };
 
 module.exports = { getBooks };

@@ -1,21 +1,48 @@
 const { AddBookReview } = require('../services/BooksReviews');
+const { BookExistById } = require('../services/Books');
 
-const addBookReview = (reqData) => {
-  // TODO: add validation and other business logic
-  //   const { bookId, comment, review } = reqData;
-  const err = AddBookReview();
-  if (err) {
-    // handle here
+const validateAddBookReviewReqData = (reqData) => {
+  const { bookId, comment, reviewStarsCount } = reqData;
+
+  if (!bookId) {
+    return 'Book id is required';
+  }
+
+  if (!comment || !comment.length) {
+    return 'Comment is required';
+  }
+
+  if (!reviewStarsCount) {
+    return 'Review stars count is required';
+  }
+  return null;
+};
+
+const addBookReview = async (reqData) => {
+  const validationErr = validateAddBookReviewReqData(reqData);
+  if (validationErr && validationErr.length) {
     return {
-      err,
-      success: false,
+      err: { message: validationErr, respStatusCode: 401 },
     };
   }
 
-  return {
-    err,
-    success: true,
-  };
+  const { bookId, comment, reviewStarsCount } = reqData;
+  const bookExist = await BookExistById(bookId);
+  if (!bookExist) {
+    return {
+      err: { message: "Book doesn't exist", respStatusCode: 401 },
+    };
+  }
+
+  let resp = { success: false };
+  const insertionResult = await AddBookReview({
+    bookId,
+    comment,
+    reviewStars: reviewStarsCount,
+  });
+  resp.success = insertionResult && insertionResult.affectedRows ? true : false;
+
+  return { err: null, resp };
 };
 
 module.exports = { addBookReview };

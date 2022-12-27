@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-const {
-  addBookReview: addBookReviewController,
-} = require('../controllers/reviews');
+const ReviewsController = require('../controllers/reviews');
 
-router.post('/addReview', (req, res) => {
-  const { err, success } = addBookReviewController(req.body);
-  res.send({ err, success });
+router.post('/addReview', async (req, res) => {
+  const { err, resp } = await ReviewsController.addBookReview(req.body);
+  if (err && Object.keys(err).length) {
+    return res.status(err.respStatusCode).send({ err: err.message });
+  }
+
+  res.send(resp);
 });
 
 module.exports = router;
