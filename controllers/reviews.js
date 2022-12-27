@@ -1,3 +1,7 @@
+const { NewErrorResp, NewResp } = require('../common/api');
+const { BAD_REQUEST } = require('../common/responseCodes');
+const { INVALID_BOOK, MONITOR_LOGS } = require('../common/errorMessages');
+
 const { AddBookReview } = require('../services/BooksReviews');
 const { BookExistById } = require('../services/Books');
 
@@ -21,28 +25,30 @@ const validateAddBookReviewReqData = (reqData) => {
 const addBookReview = async (reqData) => {
   const validationErr = validateAddBookReviewReqData(reqData);
   if (validationErr && validationErr.length) {
-    return {
-      err: { message: validationErr, respStatusCode: 401 },
-    };
+    return { err: NewErrorResp(validationErr, BAD_REQUEST) };
   }
 
   const { bookId, comment, reviewStarsCount } = reqData;
   const bookExist = await BookExistById(bookId);
   if (!bookExist) {
-    return {
-      err: { message: "Book doesn't exist", respStatusCode: 401 },
-    };
+    return { err: NewErrorResp(INVALID_BOOK, BAD_REQUEST) };
   }
 
-  let resp = { success: false };
   const insertionResult = await AddBookReview({
     bookId,
     comment,
     reviewStars: reviewStarsCount,
   });
-  resp.success = insertionResult && insertionResult.affectedRows ? true : false;
+  const recordCreated =
+    insertionResult && insertionResult.affectedRows ? true : false;
+  if (recordCreated) {
+    return { resp: NewResp(recordCreated), err: NewErrorResp() };
+  }
 
-  return { err: null, resp };
+  return {
+    resp: NewResp(recordCreated, null, MONITOR_LOGS),
+    err: NewErrorResp(),
+  };
 };
 
 module.exports = { addBookReview };

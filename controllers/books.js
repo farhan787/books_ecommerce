@@ -1,4 +1,5 @@
 const { GetBooksWithReviewsSortedByRatings } = require('../services/Books');
+const { NewErrorResp, NewResp } = require('../common/api');
 
 const getBooks = async (req) => {
   let { limit, offset } = req.query;
@@ -8,8 +9,9 @@ const getBooks = async (req) => {
   if (offset) options.offset = parseInt(offset);
 
   const books = await GetBooksWithReviewsSortedByRatings(options);
-  const resp = { books };
-  return { resp, err: null };
+
+  const data = { books };
+  return { resp: NewResp(true, data), err: NewErrorResp() };
 };
 
 module.exports = { getBooks };
